@@ -5,6 +5,7 @@ import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import MainLayout from './pages/MainLayout.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import SearchDeveloper from './pages/SearchDeveloper.jsx';
 import { ProtectedRoute, PublicOnlyRoute } from './routes/RouteGuards.jsx';
 
 const router = createBrowserRouter([
@@ -27,7 +28,15 @@ const router = createBrowserRouter([
 						<Dashboard></Dashboard>
 					</ProtectedRoute>
 				)
-      },
+			},
+			{
+				path: "/search",
+				element: (
+					<ProtectedRoute>
+						<SearchDeveloper></SearchDeveloper>
+					</ProtectedRoute>
+				)
+			},
     ]
 	},
 ]);

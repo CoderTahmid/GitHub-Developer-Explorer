@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
     return (
@@ -6,9 +7,13 @@ const Dashboard = () => {
             <div className="mx-auto max-w-5xl rounded-xl border border-base-300 bg-base-100 p-6 shadow">
                 <h1 className="text-3xl font-bold">Dashboard</h1>
                 <p className="mt-3 text-base-content/70">
-                    Welcome back. This is your internal recruiter dashboard for exploring
-                    GitHub developers.
+                    Welcome back. This is your internal recruiter dashboard for exploring GitHub developers.
                 </p>
+                <div className="mt-5">
+                    <Link to="/search" className="btn btn-neutral">
+                        Go to Developer Search
+                    </Link>
+                </div>
             </div>
         </section>
     );
