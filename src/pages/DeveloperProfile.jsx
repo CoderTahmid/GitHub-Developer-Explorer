@@ -1,6 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { FiArrowLeft, FiExternalLink, FiMapPin, FiUsers, FiGitBranch, FiStar, FiGitCommit } from 'react-icons/fi';
+import { FiArrowLeft, FiExternalLink, FiMapPin, FiUsers, FiGitBranch, FiGitCommit } from 'react-icons/fi';
 import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
+
+const SHORTLIST_STORAGE_KEY = 'gde_shortlisted_candidates';
+
+const getShortlistedCandidates = () => {
+    try {
+        const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY);
+        if (!raw) {
+            return [];
+        }
+
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
+
+const saveShortlistedCandidates = (candidates) => {
+    localStorage.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(candidates));
+};
 
 const DeveloperProfile = () => {
     const { username } = useParams();
@@ -8,6 +30,7 @@ const DeveloperProfile = () => {
     const [repositories, setRepositories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [shortlisted, setShortlisted] = useState(false);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -67,6 +90,7 @@ const DeveloperProfile = () => {
 
                 setProfile(profileData);
                 setRepositories(repositoriesData ?? []);
+                setShortlisted(getShortlistedCandidates().some((candidate) => candidate.login === profileData.login));
             } catch (fetchError) {
                 if (fetchError.name === 'AbortError') {
                     return;
@@ -98,6 +122,59 @@ const DeveloperProfile = () => {
               day: 'numeric',
           })
         : '-';
+
+    const handleShortlistToggle = async () => {
+        if (!profile) {
+            return;
+        }
+
+        if (shortlisted) {
+            const result = await Swal.fire({
+                title: 'Remove from shortlist?',
+                text: `Do you want to remove @${profile.login} from shortlist?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#111111',
+                cancelButtonColor: '#6b7280',
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const next = getShortlistedCandidates().filter((candidate) => candidate.login !== profile.login);
+            saveShortlistedCandidates(next);
+            setShortlisted(false);
+            toast.info(`${profile.login} removed from shortlist.`);
+            return;
+        }
+
+        const existing = getShortlistedCandidates();
+        if (existing.some((candidate) => candidate.login === profile.login)) {
+            setShortlisted(true);
+            return;
+        }
+
+        const next = [{
+            login: profile.login,
+            name: profile.name,
+            avatar_url: profile.avatar_url,
+            html_url: profile.html_url,
+            bio: profile.bio,
+            followers: profile.followers,
+            following: profile.following,
+            public_repos: profile.public_repos,
+            location: profile.location,
+            company: profile.company,
+            created_at: profile.created_at,
+        }, ...existing];
+
+        saveShortlistedCandidates(next);
+        setShortlisted(true);
+        toast.success(`${profile.login} added to shortlist.`);
+    };
 
     return (
         <section className="min-h-screen bg-base-200 px-4 py-8 sm:py-10">
@@ -153,6 +230,12 @@ const DeveloperProfile = () => {
                                     Open GitHub profile
                                     <FiExternalLink />
                                 </a>
+                                <button
+                                    onClick={handleShortlistToggle}
+                                    className={`btn btn-sm mt-3 ${shortlisted ? 'btn-outline btn-error' : 'btn-neutral'}`}
+                                >
+                                    {shortlisted ? 'Remove from shortlist' : 'Shortlist this user'}
+                                </button>
                             </div>
 
                             <div className="mt-6 space-y-3 text-sm">

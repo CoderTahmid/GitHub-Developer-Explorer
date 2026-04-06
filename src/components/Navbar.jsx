@@ -28,9 +28,14 @@ const Navbar = () => {
 						<li>
 							<Link to="/search">Search for developer</Link>
 						</li>
+						<li>
+							<Link to="/shortlisted">Shortlisted Candidates</Link>
+						</li>
 					</ul>
 				</div>
-				<Link to="/" className="btn btn-ghost text-xl">GitHub Explorer</Link>
+				<Link to="/" className="btn btn-ghost text-xl">
+					GitHub Explorer
+				</Link>
 			</div>
 			<div className="navbar-center hidden lg:flex">
 				<ul className="menu menu-horizontal px-1">
@@ -40,14 +45,20 @@ const Navbar = () => {
 					<li>
 						<Link to="/search">Search for developer</Link>
 					</li>
+					<li>
+						<Link to="/shortlisted">Shortlisted Candidates</Link>
+					</li>
 				</ul>
 			</div>
 			<div className="navbar-end">
-				{authenticated ? (
-					<button onClick={handleLogout} className="btn btn-neutral">Logout</button>
-				) : (
-					<Link to="/" className="btn btn-neutral">Login</Link>
-				)}
+				{authenticated ?
+					<button onClick={handleLogout} className="btn btn-neutral">
+						Logout
+					</button>
+				:	<Link to="/" className="btn btn-neutral">
+						Login
+					</Link>
+				}
 			</div>
 		</div>
 	);
