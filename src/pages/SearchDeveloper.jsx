@@ -3,6 +3,31 @@ import { FiSearch } from 'react-icons/fi';
 import DeveloperCard from '../components/DeveloperCard';
 
 const PER_PAGE = 12;
+const SEARCHED_USERS_STORAGE_KEY = 'gde_searched_users';
+
+const updateSearchedUsersStorage = (users) => {
+    try {
+        const raw = localStorage.getItem(SEARCHED_USERS_STORAGE_KEY);
+        const existing = raw ? JSON.parse(raw) : [];
+        const safeExisting = Array.isArray(existing) ? existing : [];
+
+        const lookup = new Map(safeExisting.map((user) => [user.login, user]));
+        users.forEach((user) => {
+            lookup.set(user.login, {
+                login: user.login,
+                avatar_url: user.avatar_url,
+                html_url: user.html_url,
+            });
+        });
+
+        localStorage.setItem(
+            SEARCHED_USERS_STORAGE_KEY,
+            JSON.stringify(Array.from(lookup.values())),
+        );
+    } catch {
+        // Ignore malformed storage and skip dashboard tracking update.
+    }
+};
 
 const getPageNumbers = (currentPage, totalPages) => {
     if (totalPages <= 5) {
@@ -63,8 +88,10 @@ const SearchDeveloper = () => {
                 }
 
                 const data = await response.json();
-                setUsers(data.items ?? []);
+                const fetchedUsers = data.items ?? [];
+                setUsers(fetchedUsers);
                 setTotalCount(Math.min(data.total_count ?? 0, 1000));
+                updateSearchedUsersStorage(fetchedUsers);
             } catch (fetchError) {
                 if (fetchError.name === 'AbortError') {
                     return;
