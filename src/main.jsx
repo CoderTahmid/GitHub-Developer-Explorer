@@ -6,6 +6,7 @@ import MainLayout from './pages/MainLayout.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import SearchDeveloper from './pages/SearchDeveloper.jsx';
+import DeveloperProfile from './pages/DeveloperProfile.jsx';
 import { ProtectedRoute, PublicOnlyRoute } from './routes/RouteGuards.jsx';
 
 const router = createBrowserRouter([
@@ -34,6 +35,14 @@ const router = createBrowserRouter([
 				element: (
 					<ProtectedRoute>
 						<SearchDeveloper></SearchDeveloper>
+					</ProtectedRoute>
+				)
+			},
+			{
+				path: "/developer/:username",
+				element: (
+					<ProtectedRoute>
+						<DeveloperProfile></DeveloperProfile>
 					</ProtectedRoute>
 				)
 			},

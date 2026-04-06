@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiExternalLink, FiSearch } from 'react-icons/fi';
+import { FiSearch } from 'react-icons/fi';
+import DeveloperCard from '../components/DeveloperCard';
 
 const PER_PAGE = 12;
 
@@ -166,34 +167,7 @@ const SearchDeveloper = () => {
                         ))}
 
                     {!loading &&
-                        users.map((user) => (
-                            <article key={user.id} className="card border border-base-300 bg-base-100 shadow-sm transition hover:shadow-md">
-                                <div className="card-body">
-                                    <div className="flex items-center gap-4">
-                                        <img
-                                            src={user.avatar_url}
-                                            alt={`${user.login} avatar`}
-                                            className="h-14 w-14 rounded-full border border-base-300 object-cover"
-                                        />
-                                        <div>
-                                            <h2 className="card-title text-lg">{user.login}</h2>
-                                            <p className="text-xs text-base-content/60">GitHub User</p>
-                                        </div>
-                                    </div>
-                                    <div className="card-actions mt-4 justify-end">
-                                        <a
-                                            href={user.html_url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="btn btn-outline btn-sm"
-                                        >
-                                            Profile
-                                            <FiExternalLink />
-                                        </a>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
+                        users.map((user) => <DeveloperCard key={user.id} user={user} />)}
                 </div>
 
                 {!error && totalPages > 1 && (
