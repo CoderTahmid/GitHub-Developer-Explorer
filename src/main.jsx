@@ -2,8 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import App from './App.jsx'
 import MainLayout from './pages/MainLayout.jsx';
+import Login from './pages/Login.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import { ProtectedRoute, PublicOnlyRoute } from './routes/RouteGuards.jsx';
 
 const router = createBrowserRouter([
 	{
@@ -12,8 +14,20 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <p>kinggg</p>
-      }
+				element: (
+					<PublicOnlyRoute>
+						<Login></Login>
+					</PublicOnlyRoute>
+				)
+			},
+			{
+				path: "/dashboard",
+				element: (
+					<ProtectedRoute>
+						<Dashboard></Dashboard>
+					</ProtectedRoute>
+				)
+      },
     ]
 	},
 ]);

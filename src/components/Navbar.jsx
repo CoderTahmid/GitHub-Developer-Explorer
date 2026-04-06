@@ -1,6 +1,16 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { isAuthenticated, logout } from '../utils/auth';
 
 const Navbar = () => {
+    const navigate = useNavigate();
+    const authenticated = isAuthenticated();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/', { replace: true });
+    };
+
     return (
 		<div className="navbar bg-base-100 shadow-sm">
 			<div className="navbar-start">
@@ -13,33 +23,31 @@ const Navbar = () => {
 					</div>
 					<ul tabIndex="-1" className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
 						<li>
-							<a>Dashboard</a>
+							<Link to="/dashboard">Dashboard</Link>
 						</li>
 						<li>
-							<a>Item 2</a>
-						</li>
-						<li>
-							<a>Item 3</a>
+							<Link to="/">Login</Link>
 						</li>
 					</ul>
 				</div>
-				<a className="btn btn-ghost text-xl">GitHub Developer Explorer</a>
+				<Link to="/" className="btn btn-ghost text-xl">GitHub Explorer</Link>
 			</div>
 			<div className="navbar-center hidden lg:flex">
 				<ul className="menu menu-horizontal px-1">
 					<li>
-						<a>Dashboard</a>
+						<Link to="/dashboard">Dashboard</Link>
 					</li>
 					<li>
-                        <a href="">Item 2</a>
-					</li>
-					<li>
-						<a>Item 3</a>
+						<Link to="/">Login</Link>
 					</li>
 				</ul>
 			</div>
 			<div className="navbar-end">
-				<a className="btn">Login</a>
+				{authenticated ? (
+					<button onClick={handleLogout} className="btn btn-neutral">Logout</button>
+				) : (
+					<Link to="/" className="btn btn-neutral">Login</Link>
+				)}
 			</div>
 		</div>
 	);
