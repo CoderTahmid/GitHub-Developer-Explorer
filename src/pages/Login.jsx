@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMockCredentials, login as setLoginSession } from '../utils/auth';
+import { login as setLoginSession } from '../utils/auth';
+
+const HARDCODED_EMAIL = 'admin@gmail.com';
+const HARDCODED_PASSWORD = '12345';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -10,11 +13,9 @@ const Login = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-
-        const credentials = getMockCredentials();
         const enteredEmail = email.trim();
 
-        if (enteredEmail === credentials.email && password === credentials.password) {
+		if (enteredEmail === HARDCODED_EMAIL && password === HARDCODED_PASSWORD) {
             setLoginSession();
             setError('');
             navigate('/dashboard', { replace: true });
