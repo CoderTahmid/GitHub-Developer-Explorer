@@ -14,51 +14,16 @@ A recruiter-focused web app to search GitHub developers, inspect profiles and re
 
 ## How To Run The Project
 
-### 1. Clone and install
+
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/CoderTahmid/GitHub-Developer-Explorer
 cd GitHub-Developer-Explorer
 npm install
-```
-
-### 2. Configure environment variables
-
-Create or update `.env.local` in the project root:
-
-```env
-VITE_AUTH_EMAIL=tahmid.ibne@gmail.com
-VITE_AUTH_PASSWORD=12345
-```
-
-These are used for the mock login system.
-
-### 3. Start development server
-
-```bash
 npm run dev
 ```
 
-### 4. Build for production
-
-```bash
-npm run build
-```
-
-### 5. Preview production build
-
-```bash
-npm run preview
-```
-
-## Available Scripts
-
-- `npm run dev` -> Start Vite development server
-- `npm run build` -> Build production assets
-- `npm run preview` -> Preview production build
-- `npm run lint` -> Run ESLint
-
-## Folder Structure Explanation
+## Folder Structure 
 
 ```text
 src/
@@ -80,39 +45,6 @@ src/
 		auth.js
 	main.jsx
 ```
-
-### `src/components`
-
-- Reusable UI elements.
-- `DeveloperCard.jsx`: Card for each searched user (internal profile navigation + external GitHub link).
-- `Navbar.jsx`, `Footer.jsx`: Layout navigation and footer.
-
-### `src/pages`
-
-- Route-level screens.
-- `Login.jsx`: Mock authentication form.
-- `Dashboard.jsx`: Displays key metrics and chart.
-- `SearchDeveloper.jsx`: Search UI and paginated user listing.
-- `DeveloperProfile.jsx`: User details, repository list, shortlist action.
-- `ShortlistedCandidates.jsx`: View/remove shortlisted users.
-- `ErrorPage.jsx`: Invalid route and router error fallback UI.
-- `MainLayout.jsx`: Shared shell (navbar, outlet, footer, toast container).
-
-### `src/routes`
-
-- Route protection logic.
-- `RouteGuards.jsx`:
-	- `ProtectedRoute` for authenticated-only pages.
-	- `PublicOnlyRoute` for login-only access when logged out.
-
-### `src/utils`
-
-- `auth.js` stores mock authentication helper functions and localStorage session key handling.
-
-### `src/main.jsx`
-
-- App bootstrap and router configuration.
-- Defines route loaders and all GitHub API calling logic.
 
 ## State Management Explanation
 
@@ -184,18 +116,6 @@ https://api.github.com/users/{username}/repos?per_page=100&sort=updated
 - Loaders return safe fallback objects with `error` strings so pages can render clear alerts.
 - Router-level error UI is handled by `errorElement` using `ErrorPage.jsx`.
 
-## Feature Summary
+## Live side link
 
-- Mock login with env credentials
-- Protected routes and public-only login route
-- GitHub developer search with pagination
-- Developer profile details and repository listing
-- Candidate shortlist with persistence and remove confirmations
-- Toast notifications for shortlist actions
-- Dashboard metrics + bar chart visualization
-- Custom route error page
-
-## Notes
-
-- This project uses mock authentication for assignment/demo purposes (not production security).
-- GitHub unauthenticated requests are rate-limited; heavy usage may temporarily return API limit errors.
+https://sunny-hotteok-9d438d.netlify.app/
