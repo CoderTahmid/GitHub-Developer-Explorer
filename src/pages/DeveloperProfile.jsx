@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
 const SHORTLIST_STORAGE_KEY = 'gde_shortlisted_candidates';
+const INITIAL_REPOSITORY_COUNT = 8;
 
 const getShortlistedCandidates = () => {
     try {
@@ -31,6 +32,12 @@ const DeveloperProfile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [shortlisted, setShortlisted] = useState(false);
+    const [visibleRepositoryCount, setVisibleRepositoryCount] = useState(INITIAL_REPOSITORY_COUNT);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        setVisibleRepositoryCount(INITIAL_REPOSITORY_COUNT);
+    }, [username]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -283,8 +290,9 @@ const DeveloperProfile = () => {
                                         No repositories available.
                                     </div>
                                 ) : (
-                                    <div className="mt-4 grid gap-4">
-                                        {repositories.map((repository) => (
+                                    <>
+                                        <div className="mt-4 grid gap-4">
+                                            {repositories.slice(0, visibleRepositoryCount).map((repository) => (
                                             <article key={repository.id} className="rounded-xl border border-base-300 bg-base-200 p-5 transition hover:shadow-sm">
                                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                                     <div>
@@ -310,8 +318,35 @@ const DeveloperProfile = () => {
                                                     <span className="badge badge-outline">Language: {repository.language || 'Unknown'}</span>
                                                 </div>
                                             </article>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+
+                                        {repositories.length > INITIAL_REPOSITORY_COUNT && (
+                                            <div className="mt-5 flex items-center gap-3">
+                                                {visibleRepositoryCount < repositories.length ? (
+                                                    <button
+                                                        className="btn btn-outline btn-sm"
+                                                        onClick={() => setVisibleRepositoryCount((prev) => Math.min(prev + INITIAL_REPOSITORY_COUNT, repositories.length))}
+                                                    >
+                                                        See more repositories
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="btn btn-outline btn-sm"
+                                                        onClick={() => {
+                                                            setVisibleRepositoryCount(INITIAL_REPOSITORY_COUNT);
+                                                            window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                                                        }}
+                                                    >
+                                                        Show less
+                                                    </button>
+                                                )}
+                                                <span className="text-sm text-base-content/70">
+                                                    Showing {Math.min(visibleRepositoryCount, repositories.length)} of {repositories.length}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
