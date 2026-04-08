@@ -1,33 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { FiSearch } from 'react-icons/fi';
+import { useLoaderData, useNavigate, useNavigation } from 'react-router-dom';
 import DeveloperCard from '../components/DeveloperCard';
 
 const PER_PAGE = 12;
-const SEARCHED_USERS_STORAGE_KEY = 'gde_searched_users';
-
-const updateSearchedUsersStorage = (users) => {
-    try {
-        const raw = localStorage.getItem(SEARCHED_USERS_STORAGE_KEY);
-        const existing = raw ? JSON.parse(raw) : [];
-        const safeExisting = Array.isArray(existing) ? existing : [];
-
-        const lookup = new Map(safeExisting.map((user) => [user.login, user]));
-        users.forEach((user) => {
-            lookup.set(user.login, {
-                login: user.login,
-                avatar_url: user.avatar_url,
-                html_url: user.html_url,
-            });
-        });
-
-        localStorage.setItem(
-            SEARCHED_USERS_STORAGE_KEY,
-            JSON.stringify(Array.from(lookup.values())),
-        );
-    } catch {
-        // Ignore malformed storage and skip dashboard tracking update.
-    }
-};
 
 const getPageNumbers = (currentPage, totalPages) => {
     if (totalPages <= 5) {
@@ -46,80 +22,13 @@ const getPageNumbers = (currentPage, totalPages) => {
 };
 
 const SearchDeveloper = () => {
-    const [inputValue, setInputValue] = useState('frontend');
-    const [keyword, setKeyword] = useState('frontend');
-    const [users, setUsers] = useState([]);
-    const [totalCount, setTotalCount] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const navigation = useNavigation();
+    const { users, totalCount, keyword, currentPage, error } = useLoaderData();
 
-    useEffect(() => {
-        const controller = new AbortController();
-
-        const fetchUsers = async () => {
-            setLoading(true);
-            setError('');
-
-            try {
-                const response = await fetch(
-                    `https://api.github.com/search/users?q=${encodeURIComponent(keyword)}&per_page=${PER_PAGE}&page=${currentPage}`,
-                    {
-                        headers: {
-                            Accept: 'application/vnd.github+json',
-                        },
-                        signal: controller.signal,
-                    },
-                );
-
-                if (!response.ok) {
-                    let message = 'Failed to fetch developers from GitHub.';
-
-                    try {
-                        const errorData = await response.json();
-                        if (errorData?.message) {
-                            message = errorData.message;
-                        }
-                    } catch {
-                        // Keep fallback message when response has no JSON body.
-                    }
-
-                    throw new Error(message);
-                }
-
-                const data = await response.json();
-                const fetchedUsers = data.items ?? [];
-                setUsers(fetchedUsers);
-                setTotalCount(Math.min(data.total_count ?? 0, 1000));
-                updateSearchedUsersStorage(fetchedUsers);
-            } catch (fetchError) {
-                if (fetchError.name === 'AbortError') {
-                    return;
-                }
-
-                setUsers([]);
-                setTotalCount(0);
-                setError(fetchError.message || 'Something went wrong while searching developers.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (!keyword.trim()) {
-            setUsers([]);
-            setTotalCount(0);
-            setError('Please enter a keyword to search developers.');
-            return () => {
-                controller.abort();
-            };
-        }
-
-        fetchUsers();
-
-        return () => {
-            controller.abort();
-        };
-    }, [keyword, currentPage]);
+    const loading =
+        navigation.state === 'loading' &&
+        Boolean(navigation.location?.pathname?.startsWith('/search'));
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil(totalCount / PER_PAGE)), [totalCount]);
     const pageNumbers = useMemo(() => getPageNumbers(currentPage, totalPages), [currentPage, totalPages]);
@@ -127,14 +36,17 @@ const SearchDeveloper = () => {
     const handleSearchSubmit = (event) => {
         event.preventDefault();
 
-        const nextKeyword = inputValue.trim();
+        const formData = new FormData(event.currentTarget);
+        const nextKeyword = String(formData.get('q') || '').trim();
         if (!nextKeyword) {
-            setError('Please enter a keyword to search developers.');
             return;
         }
 
-        setCurrentPage(1);
-        setKeyword(nextKeyword);
+        navigate(`/search?q=${encodeURIComponent(nextKeyword)}&page=1`);
+    };
+
+    const handlePageChange = (nextPage) => {
+        navigate(`/search?q=${encodeURIComponent(keyword || 'frontend')}&page=${nextPage}`);
     };
 
     return (
@@ -150,11 +62,11 @@ const SearchDeveloper = () => {
                         <label className="input input-bordered flex items-center gap-2 sm:flex-1">
                             <FiSearch className="text-base-content/60" />
                             <input
+                                name="q"
                                 type="text"
                                 className="grow"
                                 placeholder="Try: react, node, python"
-                                value={inputValue}
-                                onChange={(event) => setInputValue(event.target.value)}
+                                defaultValue={keyword || 'frontend'}
                             />
                         </label>
                         <button type="submit" className="btn btn-neutral min-w-28">
@@ -163,7 +75,7 @@ const SearchDeveloper = () => {
                     </form>
 
                     <div className="mt-3 text-sm text-base-content/70">
-                        {loading ? 'Searching developers...' : `Showing results for "${keyword}"`}
+                        {loading ? 'Searching developers...' : `Showing results for "${keyword || 'frontend'}"`}
                     </div>
                 </div>
 
@@ -201,7 +113,7 @@ const SearchDeveloper = () => {
                     <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-base-300 bg-base-100 p-4">
                         <button
                             className="btn btn-sm"
-                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1 || loading}
                         >
                             Previous
@@ -211,7 +123,7 @@ const SearchDeveloper = () => {
                             <button
                                 key={pageNumber}
                                 className={`btn btn-sm ${pageNumber === currentPage ? 'btn-neutral' : ''}`}
-                                onClick={() => setCurrentPage(pageNumber)}
+                                onClick={() => handlePageChange(pageNumber)}
                                 disabled={loading}
                             >
                                 {pageNumber}
@@ -220,7 +132,7 @@ const SearchDeveloper = () => {
 
                         <button
                             className="btn btn-sm"
-                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages || loading}
                         >
                             Next

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiArrowLeft, FiExternalLink, FiMapPin, FiUsers, FiGitBranch, FiGitCommit } from 'react-icons/fi';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLoaderData, useNavigation, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
@@ -25,102 +25,15 @@ const saveShortlistedCandidates = (candidates) => {
     localStorage.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(candidates));
 };
 
-const DeveloperProfile = () => {
-    const { username } = useParams();
-    const [profile, setProfile] = useState(null);
-    const [repositories, setRepositories] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [shortlisted, setShortlisted] = useState(false);
-    const [visibleRepositoryCount, setVisibleRepositoryCount] = useState(INITIAL_REPOSITORY_COUNT);
-
-    useEffect(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        setVisibleRepositoryCount(INITIAL_REPOSITORY_COUNT);
-    }, [username]);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        const fetchProfile = async () => {
-            setLoading(true);
-            setError('');
-
-            try {
-                const [profileResponse, reposResponse] = await Promise.all([
-                    fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, {
-                        headers: {
-                            Accept: 'application/vnd.github+json',
-                        },
-                        signal: controller.signal,
-                    }),
-                    fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`, {
-                        headers: {
-                            Accept: 'application/vnd.github+json',
-                        },
-                        signal: controller.signal,
-                    }),
-                ]);
-
-                if (!profileResponse.ok) {
-                    let message = 'Failed to fetch developer profile.';
-
-                    try {
-                        const errorData = await profileResponse.json();
-                        if (errorData?.message) {
-                            message = errorData.message;
-                        }
-                    } catch {
-                        // keep fallback message
-                    }
-
-                    throw new Error(message);
-                }
-
-                if (!reposResponse.ok) {
-                    let message = 'Failed to fetch repositories.';
-
-                    try {
-                        const errorData = await reposResponse.json();
-                        if (errorData?.message) {
-                            message = errorData.message;
-                        }
-                    } catch {
-                        // keep fallback message
-                    }
-
-                    throw new Error(message);
-                }
-
-                const profileData = await profileResponse.json();
-                const repositoriesData = await reposResponse.json();
-
-                setProfile(profileData);
-                setRepositories(repositoriesData ?? []);
-                setShortlisted(getShortlistedCandidates().some((candidate) => candidate.login === profileData.login));
-            } catch (fetchError) {
-                if (fetchError.name === 'AbortError') {
-                    return;
-                }
-
-                setError(fetchError.message || 'Something went wrong while loading the developer profile.');
-                setProfile(null);
-                setRepositories([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (!username) {
-            setError('Developer username is missing.');
-            setLoading(false);
-            return undefined;
+const DeveloperProfileContent = ({ profile, repositories, error, loading }) => {
+    const [shortlisted, setShortlisted] = useState(() => {
+        if (!profile?.login) {
+            return false;
         }
 
-        fetchProfile();
-
-        return () => controller.abort();
-    }, [username]);
+        return getShortlistedCandidates().some((candidate) => candidate.login === profile.login);
+    });
+    const [visibleRepositoryCount, setVisibleRepositoryCount] = useState(INITIAL_REPOSITORY_COUNT);
 
     const formattedCreatedAt = profile?.created_at
         ? new Date(profile.created_at).toLocaleDateString(undefined, {
@@ -354,6 +267,29 @@ const DeveloperProfile = () => {
                 )}
             </div>
         </section>
+    );
+};
+
+const DeveloperProfile = () => {
+    const { username } = useParams();
+    const navigation = useNavigation();
+    const { profile, repositories, error } = useLoaderData();
+    const loading =
+        navigation.state === 'loading' &&
+        Boolean(navigation.location?.pathname?.startsWith('/developer/'));
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }, [username]);
+
+    return (
+        <DeveloperProfileContent
+            key={username || 'developer-profile'}
+            profile={profile}
+            repositories={repositories}
+            error={error}
+            loading={loading}
+        />
     );
 };
 
