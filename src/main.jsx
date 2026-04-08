@@ -50,7 +50,7 @@ const getGithubErrorMessage = async (response, fallbackMessage) => {
 
 const searchDevelopersLoader = async ({ request }) => {
 	const url = new URL(request.url);
-	const keyword = (url.searchParams.get('q') ?? 'frontend').trim();
+	const keyword = (url.searchParams.get('q') ?? '').trim();
 	const pageParam = Number.parseInt(url.searchParams.get('page') ?? '1', 10);
 	const currentPage = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
@@ -59,8 +59,8 @@ const searchDevelopersLoader = async ({ request }) => {
 			users: [],
 			totalCount: 0,
 			keyword: '',
-			currentPage,
-			error: 'Please enter a keyword to search developers.',
+			currentPage: 1,
+			error: '',
 		};
 	}
 

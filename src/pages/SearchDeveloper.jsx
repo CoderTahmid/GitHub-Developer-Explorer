@@ -25,10 +25,14 @@ const SearchDeveloper = () => {
     const navigate = useNavigate();
     const navigation = useNavigation();
     const { users, totalCount, keyword, currentPage, error } = useLoaderData();
+    const hasKeyword = Boolean(keyword?.trim());
 
     const loading =
         navigation.state === 'loading' &&
         Boolean(navigation.location?.pathname?.startsWith('/search'));
+    const returnToSearch = hasKeyword
+        ? `/search?q=${encodeURIComponent(keyword)}&page=${currentPage}`
+        : '/search';
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil(totalCount / PER_PAGE)), [totalCount]);
     const pageNumbers = useMemo(() => getPageNumbers(currentPage, totalPages), [currentPage, totalPages]);
@@ -46,7 +50,7 @@ const SearchDeveloper = () => {
     };
 
     const handlePageChange = (nextPage) => {
-        navigate(`/search?q=${encodeURIComponent(keyword || 'frontend')}&page=${nextPage}`);
+        navigate(`/search?q=${encodeURIComponent(keyword)}&page=${nextPage}`);
     };
 
     return (
@@ -66,7 +70,7 @@ const SearchDeveloper = () => {
                                 type="text"
                                 className="grow"
                                 placeholder="Try: react, node, python"
-                                defaultValue={keyword || 'frontend'}
+                                defaultValue={keyword || ''}
                             />
                         </label>
                         <button type="submit" className="btn btn-neutral min-w-28">
@@ -75,7 +79,11 @@ const SearchDeveloper = () => {
                     </form>
 
                     <div className="mt-3 text-sm text-base-content/70">
-                        {loading ? 'Searching developers...' : `Showing results for "${keyword || 'frontend'}"`}
+                        {loading
+                            ? 'Searching developers...'
+                            : hasKeyword
+                                ? `Showing results for "${keyword}"`
+                                : 'Enter a keyword and click Search to find developers.'}
                     </div>
                 </div>
 
@@ -85,7 +93,7 @@ const SearchDeveloper = () => {
                     </div>
                 )}
 
-                {!error && !loading && users.length === 0 && (
+                {!error && !loading && hasKeyword && users.length === 0 && (
                     <div className="rounded-xl border border-base-300 bg-base-100 p-6 text-base-content/70">
                         No developers found for this keyword.
                     </div>
@@ -106,7 +114,13 @@ const SearchDeveloper = () => {
                         ))}
 
                     {!loading &&
-                        users.map((user) => <DeveloperCard key={user.id} user={user} />)}
+                        users.map((user) => (
+                            <DeveloperCard
+                                key={user.id}
+                                user={user}
+                                returnTo={returnToSearch}
+                            />
+                        ))}
                 </div>
 
                 {!error && totalPages > 1 && (

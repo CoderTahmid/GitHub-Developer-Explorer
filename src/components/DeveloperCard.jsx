@@ -2,18 +2,26 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowRight, FiExternalLink } from 'react-icons/fi';
 
-const DeveloperCard = ({ user }) => {
+const DeveloperCard = ({ user, returnTo }) => {
     const navigate = useNavigate();
+
+    const openProfile = () => {
+        navigate(`/developer/${user.login}`, {
+            state: {
+                returnTo,
+            },
+        });
+    };
 
     return (
         <article
             role="button"
             tabIndex={0}
-            onClick={() => navigate(`/developer/${user.login}`)}
+            onClick={openProfile}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    navigate(`/developer/${user.login}`);
+                    openProfile();
                 }
             }}
             className="card cursor-pointer border border-base-300 bg-base-100 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-base-content/20"

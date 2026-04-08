@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiArrowLeft, FiExternalLink, FiMapPin, FiUsers, FiGitBranch, FiGitCommit } from 'react-icons/fi';
-import { Link, useLoaderData, useNavigation, useParams } from 'react-router-dom';
+import { Link, useLoaderData, useLocation, useNavigation, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
@@ -25,7 +25,7 @@ const saveShortlistedCandidates = (candidates) => {
     localStorage.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(candidates));
 };
 
-const DeveloperProfileContent = ({ profile, repositories, error, loading }) => {
+const DeveloperProfileContent = ({ profile, repositories, error, loading, backTo }) => {
     const [shortlisted, setShortlisted] = useState(() => {
         if (!profile?.login) {
             return false;
@@ -99,7 +99,7 @@ const DeveloperProfileContent = ({ profile, repositories, error, loading }) => {
     return (
         <section className="min-h-screen bg-base-200 px-4 py-8 sm:py-10">
             <div className="mx-auto max-w-6xl space-y-6">
-                <Link to="/search" className="btn btn-ghost btn-sm w-fit">
+                <Link to={backTo} className="btn btn-ghost btn-sm w-fit">
                     <FiArrowLeft />
                     Back to search
                 </Link>
@@ -272,11 +272,13 @@ const DeveloperProfileContent = ({ profile, repositories, error, loading }) => {
 
 const DeveloperProfile = () => {
     const { username } = useParams();
+    const location = useLocation();
     const navigation = useNavigation();
     const { profile, repositories, error } = useLoaderData();
     const loading =
         navigation.state === 'loading' &&
         Boolean(navigation.location?.pathname?.startsWith('/developer/'));
+    const backTo = location.state?.returnTo || '/search';
 
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -289,6 +291,7 @@ const DeveloperProfile = () => {
             repositories={repositories}
             error={error}
             loading={loading}
+            backTo={backTo}
         />
     );
 };
